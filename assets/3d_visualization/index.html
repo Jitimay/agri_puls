@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgriPulse 3D Visualization</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #0a0a0a;
+            overflow: hidden;
+            font-family: 'Arial', sans-serif;
+        }
+        
+        #container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+        
+        #info-panel {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 15px;
+            border-radius: 15px;
+            max-width: 350px;
+            max-height: 400px;
+            z-index: 100;
+            border: 2px solid #6F4E37;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+        }
+        
+        #data-streams {
+            max-height: 300px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: #6F4E37 transparent;
+        }
+        
+        #data-streams::-webkit-scrollbar {
+            width: 4px;
+        }
+        
+        #data-streams::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        
+        #data-streams::-webkit-scrollbar-thumb {
+            background: #6F4E37;
+            border-radius: 2px;
+        }
+        
+        .data-stream {
+            margin: 8px 0;
+            padding: 10px;
+            border-radius: 8px;
+            border-left: 4px solid;
+            font-size: 12px;
+            line-height: 1.4;
+            animation: slideIn 0.3s ease-out;
+            position: relative;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        .opportunity { 
+            background: rgba(76, 175, 80, 0.2); 
+            border-left-color: #4CAF50;
+        }
+        .watch { 
+            background: rgba(255, 193, 7, 0.2); 
+            border-left-color: #FFC107;
+        }
+        .threat { 
+            background: rgba(244, 67, 54, 0.2); 
+            border-left-color: #F44336;
+        }
+        
+        #loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #6F4E37;
+            font-size: 18px;
+            z-index: 200;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div id="loading">Loading AgriPulse 3D Visualization...</div>
+        <div id="info-panel">
+            <h3 style="color: #6F4E37; margin-top: 0;">AgriPulse Echo</h3>
+            <div id="data-streams"></div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js"></script>
+    <script src="agripulse-3d.js"></script>
+</body>
+</html>
