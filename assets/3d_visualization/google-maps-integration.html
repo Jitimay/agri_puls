@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgriPulse 3D with Google Maps</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #0a0a0a;
+            overflow: hidden;
+            font-family: 'Arial', sans-serif;
+        }
+        
+        #container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+        
+        #info-panel {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 15px;
+            border-radius: 15px;
+            max-width: 350px;
+            z-index: 100;
+            border: 2px solid #6F4E37;
+        }
+
+        #map-controls {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 10px;
+            border-radius: 10px;
+            z-index: 100;
+        }
+
+        .map-button {
+            background: #6F4E37;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            margin: 2px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .map-button:hover {
+            background: #8B4513;
+        }
+
+        .map-button.active {
+            background: #4CAF50;
+        }
+
+        #loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 18px;
+            z-index: 200;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div id="loading">Loading AgriPulse 3D Visualization...</div>
+        
+        <div id="info-panel">
+            <h3>AgriPulse Echo - Real Map Integration</h3>
+            <div id="data-streams">
+                <p>🗺️ <strong>Map Source:</strong> <span id="map-source">OpenStreetMap</span></p>
+                <p>📍 <strong>Location:</strong> Burundi Coffee Regions</p>
+                <p>🛰️ <strong>Satellites:</strong> 6 Active</p>
+                <p>☕ <strong>Coffee Regions:</strong> 5 Monitored</p>
+                <p>⚡ <strong>Status:</strong> <span id="system-status">Real-time Active</span></p>
+            </div>
+        </div>
+
+        <div id="map-controls">
+            <h4 style="color: white; margin: 0 0 10px 0;">Map Options</h4>
+            <button class="map-button active" onclick="switchMapSource('osm')">OpenStreetMap</button>
+            <button class="map-button" onclick="switchMapSource('satellite')">Satellite</button>
+            <button class="map-button" onclick="switchMapSource('terrain')">Terrain</button>
+            <button class="map-button" onclick="switchMapSource('google')">Google Maps</button>
+            <br><br>
+            <button class="map-button" onclick="toggleWeatherLayer()">Weather Layer</button>
+            <button class="map-button" onclick="togglePriceLayer()">Price Layer</button>
+            <button class="map-button" onclick="toggleAlertLayer()">Alert Layer</button>
+        </div>
+    </div>
+
+    <!-- Three.js and dependencies -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
+
+    <!-- Google Maps API with your key -->
+    <script async defer 
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA6kCI_ITuLpWODKjCkaZ8NhUssyMoMNY8&callback=initGoogleMaps">
+    </script>
+
+    <script>
+        // Global variables
+        let agriPulse3D;
+        let currentMapSource = 'osm';
+        let weatherLayerEnabled = false;
+        let priceLayerEnabled = false;
+        let alertLayerEnabled = false;
+
+        // Initialize Google Maps callback
+        function initGoogleMaps() {
+            console.log('Google Maps API loaded');
+            document.getElementById('system-status').textContent = 'Google Maps Ready';
+        }
+
+        // Map source switching
+        function switchMapSource(source) {
+            currentMapSource = source;
+            
+            // Update button states
+            document.querySelectorAll('.map-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            // Update map source display
+            const sourceNames = {
+                'osm': 'OpenStreetMap',
+                'satellite': 'Satellite Imagery',
+                'terrain': 'Terrain Map',
+                'google': 'Google Maps'
+            };
+            document.getElementById('map-source').textContent = sourceNames[source];
+
+            // Reload map with new source
+            if (agriPulse3D) {
+                agriPulse3D.switchMapSource(source);
+            }
+        }
+
+        // Layer toggles
+        function toggleWeatherLayer() {
+            weatherLayerEnabled = !weatherLayerEnabled;
+            event.target.classList.toggle('active');
+            if (agriPulse3D) {
+                agriPulse3D.toggleWeatherLayer(weatherLayerEnabled);
+            }
+        }
+
+        function togglePriceLayer() {
+            priceLayerEnabled = !priceLayerEnabled;
+            event.target.classList.toggle('active');
+            if (agriPulse3D) {
+                agriPulse3D.togglePriceLayer(priceLayerEnabled);
+            }
+        }
+
+        function toggleAlertLayer() {
+            alertLayerEnabled = !alertLayerEnabled;
+            event.target.classList.toggle('active');
+            if (agriPulse3D) {
+                agriPulse3D.toggleAlertLayer(alertLayerEnabled);
+            }
+        }
+
+        // Enhanced AgriPulse3D class with map switching
+        class EnhancedAgriPulse3D extends AgriPulse3D {
+            constructor() {
+                super();
+                this.currentMapSource = 'osm';
+                this.layersEnabled = {
+                    weather: false,
+                    price: false,
+                    alert: false
+                };
+            }
+
+            async switchMapSource(source) {
+                this.currentMapSource = source;
+                
+                const bounds = {
+                    north: -2.3, south: -4.5, west: 28.9, east: 30.9
+                };
+
+                let newTexture;
+                switch (source) {
+                    case 'google':
+                        newTexture = await this.loadGoogleMapsTexture(bounds);
+                        break;
+                    case 'satellite':
+                        newTexture = await this.loadSatelliteTexture(bounds);
+                        break;
+                    case 'terrain':
+                        newTexture = await this.loadTerrainTexture(bounds);
+                        break;
+                    default:
+                        newTexture = await this.loadMapTexture(bounds);
+                }
+
+                // Update the central node texture
+                if (this.centralNode && newTexture) {
+                    this.centralNode.material.map = newTexture;
+                    this.centralNode.material.needsUpdate = true;
+                }
+            }
+
+            async loadSatelliteTexture(bounds) {
+                // Use ArcGIS satellite imagery
+                const centerLat = (bounds.north + bounds.south) / 2;
+                const centerLon = (bounds.west + bounds.east) / 2;
+                const zoom = 8;
+                
+                const x = Math.floor((centerLon + 180) / 360 * Math.pow(2, zoom));
+                const y = Math.floor((1 - Math.log(Math.tan(centerLat * Math.PI / 180) + 1 / Math.cos(centerLat * Math.PI / 180)) / Math.PI) / 2 * Math.pow(2, zoom));
+                
+                const satelliteUrl = `https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/${zoom}/${y}/${x}`;
+                
+                return this.loadTextureFromUrl(satelliteUrl, bounds);
+            }
+
+            async loadTerrainTexture(bounds) {
+                // Use terrain tiles
+                const centerLat = (bounds.north + bounds.south) / 2;
+                const centerLon = (bounds.west + bounds.east) / 2;
+                const zoom = 8;
+                
+                const x = Math.floor((centerLon + 180) / 360 * Math.pow(2, zoom));
+                const y = Math.floor((1 - Math.log(Math.tan(centerLat * Math.PI / 180) + 1 / Math.cos(centerLat * Math.PI / 180)) / Math.PI) / 2 * Math.pow(2, zoom));
+                
+                const terrainUrl = `https://tile.opentopomap.org/${zoom}/${x}/${y}.png`;
+                
+                return this.loadTextureFromUrl(terrainUrl, bounds);
+            }
+
+            async loadTextureFromUrl(url, bounds) {
+                try {
+                    const img = new Image();
+                    img.crossOrigin = 'anonymous';
+                    
+                    return new Promise((resolve) => {
+                        img.onload = () => {
+                            const canvas = document.createElement('canvas');
+                            canvas.width = 512;
+                            canvas.height = 512;
+                            const ctx = canvas.getContext('2d');
+                            
+                            ctx.drawImage(img, 0, 0, 512, 512);
+                            this.addCoffeeRegionOverlays(ctx, bounds);
+                            
+                            const texture = new THREE.CanvasTexture(canvas);
+                            resolve(texture);
+                        };
+                        
+                        img.onerror = () => {
+                            resolve(this.createFallbackMapTexture());
+                        };
+                        
+                        img.src = url;
+                    });
+                } catch (error) {
+                    return this.createFallbackMapTexture();
+                }
+            }
+
+            toggleWeatherLayer(enabled) {
+                this.layersEnabled.weather = enabled;
+                this.updateMapLayers();
+            }
+
+            togglePriceLayer(enabled) {
+                this.layersEnabled.price = enabled;
+                this.updateMapLayers();
+            }
+
+            toggleAlertLayer(enabled) {
+                this.layersEnabled.alert = enabled;
+                this.updateMapLayers();
+            }
+
+            async updateMapLayers() {
+                const bounds = {
+                    north: -2.3, south: -4.5, west: 28.9, east: 30.9
+                };
+
+                // Reload map with current layers
+                await this.switchMapSource(this.currentMapSource);
+            }
+        }
+
+        // Initialize the enhanced 3D visualization
+        document.addEventListener('DOMContentLoaded', () => {
+            // Wait a bit for Three.js to load
+            setTimeout(() => {
+                agriPulse3D = new EnhancedAgriPulse3D();
+                window.agriPulse3D = agriPulse3D; // Make it globally accessible
+            }, 1000);
+        });
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            if (agriPulse3D && agriPulse3D.onWindowResize) {
+                agriPulse3D.onWindowResize();
+            }
+        });
+    </script>
+
+    <!-- Load the main AgriPulse 3D script -->
+    <script src="agripulse-3d.js"></script>
+</body>
+</html>

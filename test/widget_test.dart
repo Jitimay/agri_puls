@@ -11,20 +11,39 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:agripulse/main.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
+  testWidgets('AgriPulse app smoke test', (WidgetTester tester) async {
     // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+    await tester.pumpWidget(const AgriPulseApp());
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+    // Verify that our app loads with the dashboard
+    expect(find.text('AgriPulse Dashboard'), findsOneWidget);
+    
+    // Verify that the bottom navigation bar is present
+    expect(find.byType(BottomNavigationBar), findsOneWidget);
+    
+    // Verify that we have the expected navigation items
+    expect(find.text('Dashboard'), findsOneWidget);
+    expect(find.text('3D Echo'), findsOneWidget);
+    expect(find.text('Search'), findsOneWidget);
+    expect(find.text('Alerts'), findsOneWidget);
+  });
+  
+  testWidgets('Navigation between screens works', (WidgetTester tester) async {
+    // Build our app and trigger a frame.
+    await tester.pumpWidget(const AgriPulseApp());
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
+    // Tap on the 3D Echo tab
+    await tester.tap(find.text('3D Echo'));
     await tester.pump();
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    // Verify that we navigated to the 3D visualization screen
+    expect(find.text('AgriPulse Echo'), findsOneWidget);
+    
+    // Tap on the Alerts tab
+    await tester.tap(find.text('Alerts'));
+    await tester.pump();
+
+    // Verify that we navigated to the alerts screen
+    expect(find.text('Alerts'), findsOneWidget);
   });
 }

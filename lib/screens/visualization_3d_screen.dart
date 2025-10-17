@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+import 'dart:convert';
 import 'dart:developer' as developer;
 import 'dart:async';
-import '../services/data_bridge_service.dart';
+import '../services/api_service.dart';
 
 class Visualization3DScreen extends StatefulWidget {
   const Visualization3DScreen({super.key});
@@ -125,30 +126,52 @@ class _Visualization3DScreenState extends State<Visualization3DScreen> {
 
   void _sendDataToVisualization() async {
     try {
-      // Fetch real data from multiple sources
-      final futures = await Future.wait([
-        DataBridgeService.fetchWeatherData(),
-        DataBridgeService.fetchCoffeePrice(),
-        DataBridgeService.fetchCurrencyRates(),
-        DataBridgeService.fetchNewsData(),
-      ]);
+      // Fetch real data from backend API
+      final apiService = ApiService();
+      final dashboardData = await apiService.getDashboardData();
+      final regions = await apiService.getRegions();
 
       final data = {
-        'weather': futures[0],
-        'coffeePrice': futures[1],
-        'currency': futures[2],
-        'news': futures[3],
+        'dashboard': {
+          'price': {
+            'bif_per_kg': dashboardData.price.bifPerKg,
+            'change_24h': dashboardData.price.change24h,
+          },
+          'weather': dashboardData.weather,
+          'alerts': dashboardData.alerts.map((alert) => {
+            'level': alert.level,
+            'title': alert.title,
+            'description': alert.description,
+          }).toList(),
+        },
+        'regions': regions.map((region) => {
+          'name': region.name,
+          'lat': region.lat,
+          'lng': region.lng,
+          'alert_level': region.alertLevel,
+          'farmers': region.farmers,
+          'price_bif': region.priceBif,
+          'weather': {
+            'temp': region.weather.temp,
+            'conditions': region.weather.conditions,
+          },
+        }).toList(),
       };
 
-      // Generate and execute update script
-      final updateScript = DataBridgeService.generateUpdateScript(data);
-      await _controller.runJavaScript(updateScript);
-
-      developer.log('Real data sent to 3D visualization', name: 'AgriPulse3D');
-    } catch (e) {
-      developer.log('Failed to send real data: $e', name: 'AgriPulse3D');
+      // Send data to 3D visualization
+      final updateScript = '''
+        if (window.agriPulse3D) {
+          window.agriPulse3D.updateWithRealData(${json.encode(data)});
+          window.agriPulse3D.triggerIntelligenceBurst();
+        }
+      ''';
       
-      // Fallback to simulation
+      await _controller.runJavaScript(updateScript);
+      developer.log('Real API data sent to 3D visualization', name: 'AgriPulse3D');
+    } catch (e) {
+      developer.log('Failed to send real API data: $e', name: 'AgriPulse3D');
+      
+      // Fallback to existing simulation
       _controller.runJavaScript('''
         if (window.agriPulse3D) {
           window.agriPulse3D.triggerIntelligenceBurst();

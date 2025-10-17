@@ -106,10 +106,19 @@
         <div id="loading">Loading AgriPulse 3D Visualization...</div>
         <div id="info-panel">
             <h3 style="color: #6F4E37; margin-top: 0;">AgriPulse Echo</h3>
-            <div id="data-streams"></div>
+            <div id="data-streams">
+                <p>🗺️ <strong>Map:</strong> <span style="color: #4CAF50;">Google Maps Satellite</span></p>
+                <p>📍 <strong>Location:</strong> Burundi Coffee Regions</p>
+                <p>🛰️ <strong>Satellites:</strong> 6 Active Data Streams</p>
+                <p>☕ <strong>Regions:</strong> 5 Coffee Provinces</p>
+                <p>⚡ <strong>Status:</strong> <span style="color: #4CAF50;">Real-time Active</span></p>
+                <hr style="border-color: #6F4E37;">
+                <p style="font-size: 12px; color: #ccc;">Click satellites or regions for details</p>
+            </div>
         </div>
     </div>
 
+    <!-- Three.js and dependencies -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js"></script>
@@ -118,6 +127,19 @@
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js"></script>
+    
+    <!-- Google Maps API with your key -->
+    <script async defer 
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA6kCI_ITuLpWODKjCkaZ8NhUssyMoMNY8&callback=initGoogleMaps">
+    </script>
+    
+    <script>
+        // Google Maps callback
+        function initGoogleMaps() {
+            console.log('✅ Google Maps API loaded and ready');
+        }
+    </script>
+    
     <script src="agripulse-3d.js"></script>
 </body>
 </html>

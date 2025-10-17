@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Maps API Test - Burundi</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f0f0f0;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        img {
+            max-width: 100%;
+            border: 2px solid #6F4E37;
+            border-radius: 10px;
+            margin: 10px 0;
+        }
+        .coordinates {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🗺️ Google Maps API Test for AgriPulse</h1>
+        
+        <div class="status info">
+            <strong>Testing Google Maps integration for Burundi coffee regions...</strong>
+        </div>
+
+        <div class="coordinates">
+            <strong>Burundi Bounds:</strong><br>
+            North: -2.3°, South: -4.5°<br>
+            West: 28.9°, East: 30.9°<br>
+            Center: -3.4°, 29.9°
+        </div>
+
+        <h3>🛰️ Satellite View Test</h3>
+        <div id="satellite-status" class="status info">Loading satellite imagery...</div>
+        <img id="satellite-img" style="display: none;" alt="Burundi Satellite View">
+
+        <h3>🗺️ Terrain View Test</h3>
+        <div id="terrain-status" class="status info">Loading terrain map...</div>
+        <img id="terrain-img" style="display: none;" alt="Burundi Terrain View">
+
+        <h3>🛣️ Roadmap View Test</h3>
+        <div id="roadmap-status" class="status info">Loading roadmap...</div>
+        <img id="roadmap-img" style="display: none;" alt="Burundi Roadmap View">
+
+        <h3>☕ Coffee Regions</h3>
+        <div class="coordinates">
+            <strong>Major Coffee Regions:</strong><br>
+            • Kayanza: -2.9217°, 29.6297° (120k farmers)<br>
+            • Ngozi: -2.9083°, 29.8306° (95k farmers)<br>
+            • Muyinga: -2.8444°, 30.3417° (75k farmers)<br>
+            • Kirundo: -2.5833°, 30.0833° (80k farmers)<br>
+            • Gitega: -3.4264°, 29.9306° (110k farmers)
+        </div>
+
+        <div id="overall-status" class="status info">
+            <strong>Overall Status:</strong> Testing in progress...
+        </div>
+    </div>
+
+    <script>
+        const API_KEY = 'AIzaSyA6kCI_ITuLpWODKjCkaZ8NhUssyMoMNY8';
+        const CENTER = '-3.4,29.9'; // Center of Burundi
+        const ZOOM = 9;
+        const SIZE = '640x480';
+
+        // Test different map types
+        const mapTypes = [
+            { type: 'satellite', id: 'satellite', name: 'Satellite' },
+            { type: 'terrain', id: 'terrain', name: 'Terrain' },
+            { type: 'roadmap', id: 'roadmap', name: 'Roadmap' }
+        ];
+
+        let successCount = 0;
+        let totalTests = mapTypes.length;
+
+        function testMapType(mapType) {
+            const url = `https://maps.googleapis.com/maps/api/staticmap?` +
+                `center=${CENTER}&zoom=${ZOOM}&size=${SIZE}&maptype=${mapType.type}&key=${API_KEY}` +
+                `&style=feature:poi|visibility:off`;
+
+            const img = document.getElementById(`${mapType.id}-img`);
+            const status = document.getElementById(`${mapType.id}-status`);
+
+            img.onload = function() {
+                status.className = 'status success';
+                status.innerHTML = `✅ ${mapType.name} view loaded successfully!`;
+                img.style.display = 'block';
+                successCount++;
+                updateOverallStatus();
+            };
+
+            img.onerror = function() {
+                status.className = 'status error';
+                status.innerHTML = `❌ Failed to load ${mapType.name} view. Check API key and quotas.`;
+                updateOverallStatus();
+            };
+
+            img.src = url;
+        }
+
+        function updateOverallStatus() {
+            const overall = document.getElementById('overall-status');
+            
+            if (successCount === totalTests) {
+                overall.className = 'status success';
+                overall.innerHTML = `🎉 <strong>All tests passed!</strong> Google Maps integration is working perfectly for AgriPulse 3D.`;
+            } else if (successCount > 0) {
+                overall.className = 'status info';
+                overall.innerHTML = `⚡ <strong>Partial success:</strong> ${successCount}/${totalTests} map types loaded. Some may have quota limits.`;
+            } else {
+                overall.className = 'status error';
+                overall.innerHTML = `❌ <strong>Tests failed:</strong> Check your API key, enable required APIs, or check quotas.`;
+            }
+        }
+
+        // Run tests when page loads
+        window.onload = function() {
+            console.log('🧪 Starting Google Maps API tests...');
+            mapTypes.forEach(testMapType);
+        };
+    </script>
+</body>
+</html>

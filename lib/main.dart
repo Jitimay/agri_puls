@@ -1,13 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'bloc/dashboard/dashboard_bloc.dart';
-import 'screens/dashboard_screen.dart';
+import 'screens/dashboard_screen_updated.dart';
 import 'screens/visualization_3d_screen.dart';
-import 'screens/search_screen.dart';
+import 'screens/voice_search_screen.dart';
 import 'screens/alerts_screen.dart';
+import 'screens/debug_screen.dart';
+import 'services/hive_service.dart';
 import 'theme/app_theme.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  // Initialize Hive database
+  await HiveService.init();
+  
   runApp(const AgriPulseApp());
 }
 
@@ -40,8 +47,9 @@ class _MainScreenState extends State<MainScreen> {
   final List<Widget> _screens = [
     const DashboardScreen(),
     const Visualization3DScreen(),
-    const SearchScreen(),
+    const VoiceSearchScreen(),
     const AlertsScreen(),
+    const DebugScreen(), // Temporary for testing
   ];
 
   @override
@@ -64,12 +72,16 @@ class _MainScreenState extends State<MainScreen> {
             label: '3D Echo',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.search),
-            label: 'Search',
+            icon: Icon(Icons.mic),
+            label: 'Baza',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.notifications),
             label: 'Alerts',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.bug_report),
+            label: 'Debug',
           ),
         ],
       ),
